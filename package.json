@@ -1,0 +1,19 @@
+{
+  "name": "news-app",
+  "version": "1.0.0",
+  "description": "A news app that takes news from another source and presents it on to the DOM. ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JakeL501/news-app.git"
+  },
+  "author": "Jake",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JakeL501/news-app/issues"
+  },
+  "homepage": "https://github.com/JakeL501/news-app#readme"
+}
