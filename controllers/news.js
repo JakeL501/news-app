@@ -16,7 +16,7 @@ var Articles = require("../models/articles");
 var Comments = require("../models/comments");
 
 // Website To Be Scraped
-var url = "https://lifehacker.com/tag/coding";
+var url = "https://www.entrepreneur.com/topic/coding";
 
 // Test Route To Verify Scraping Works From Route
 router.get('/test', function(req, res) {
