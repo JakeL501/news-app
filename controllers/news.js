@@ -7,83 +7,51 @@ var cheerio = require('cheerio');
 var router = express.Router();
 var mongoose = require('mongoose');
 var Promise = require("bluebird");
-
-// Assign Mongoose promise
-mongoose.Promise = Promise;
+var axios = require("axios");
+var db = require("./models");
 
 // Mongodb models
-var Articles = require("../models/articles");
-var Comments = require("../models/comments");
+// var Articles = require("../models/articles");
+// var Comments = require("../models/comments");
 
-// Website To Be Scraped
-var url = "https://www.entrepreneur.com/topic/coding";
 
-// Test Route To Verify Scraping Works From Route
-router.get('/test', function(req, res) {
-    // body of the html with request
-    request(url, function(error, response, html) {
-        // load that into cheerio and save it to $ for a shorthand selector
-        var $ = cheerio.load(html);
-		var result = [];
-		$(".span6").each(function(i, element) {
-			var title = $(element).find("a").find("img").attr("title");
-			var storyLink = $(element).find("a").attr("href");
-			var imgLink = $(element).find("a").find("img").attr("src");
-			var summary = $(element).find(".td-post-text-excerpt").text();
-			summary = summary.replace(/(\r\n|\n|\r|\t|\s+)/gm, " ").trim();
-			result.push({ 
-				Title: title,
-				Story: storyLink,
-				Link: imgLink,
-				Summary: summary
-			});
-		});
-		console.log(result);
-		res.send(result);
-    });
-});
 
-// Default route renders the index handlebars view
-router.get('/', function(req, res){
-	res.render('index');
-});
 
-// Scrape the website and assign stories to the database. Checks to verify story has not been added previously.
-router.get('/scrape', function(req, res){
-    request(url, function(error, response, html) {	
-        var $ = cheerio.load(html);
-		var result = [];
-		// Scrape website
-		$(".span6").each(function(i, element) {
-		    var title = $(element).find("a").find("img").attr("title");
-		    var imgLink = $(element).find("a").find("img").attr("src");
-		    var storyLink = $(element).find("a").attr("href");
-		    var summary = $(element).find(".td-post-text-excerpt").text();
-		    summary = summary.replace(/(\r\n|\n|\r|\t|\s+)/gm, " ").trim();
-			result[i] = ({ 
-				title: title,
-				imgLink: imgLink,
-				storyLink: storyLink,
-				summary: summary
-			});	
-			// Check database to see if story saved previously to database
-			Articles.findOne({'title': title}, function(err, articleRecord) {
-				if(err) {
-					console.log(err);
-				} else {
-					if(articleRecord == null) {
-						Articles.create(result[i], function(err, record) {
-							if(err) throw err;
-							console.log("Record Added");
-						});
-					} else {
-						console.log("No Record Added");
-					}					
-				}
-			});	
-		});
-    });	
-});
+router.get("/scrape", function(req, res) {
+	// First, we grab the body of the html with request
+	axios.get("http://www.echojs.com/").then(function(response) {
+	  // Then, we load that into cheerio and save it to $ for a shorthand selector
+	  var $ = cheerio.load(response.data);
+  
+	  // Now, we grab every h2 within an article tag, and do the following:
+	  $("article h2").each(function(i, element) {
+		// Save an empty result object
+		var result = {};
+  
+		// Add the text and href of every link, and save them as properties of the result object
+		result.title = $(this)
+		  .children("a")
+		  .text();
+		result.link = $(this)
+		  .children("a")
+		  .attr("href");
+  
+		// Create a new Article using the `result` object built from scraping
+		db.Article.create(result)
+		  .then(function(dbArticle) {
+			// View the added result in the console
+			console.log(dbArticle);
+		  })
+		  .catch(function(err) {
+			// If an error occurred, send it to the client
+			return res.json(err);
+		  });
+	  });
+  
+	  // If we were able to successfully scrape and save an Article, send a message to the client
+	  res.send("Scrape Complete");
+	});
+  });
 
 // Get all current articles in database
 router.get('/articles', function(req, res){
