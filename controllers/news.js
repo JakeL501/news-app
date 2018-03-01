@@ -8,11 +8,11 @@ var router = express.Router();
 var mongoose = require('mongoose');
 var Promise = require("bluebird");
 var axios = require("axios");
-var db = require("./models");
+var db = require("../models");
 
 // Mongodb models
-// var Articles = require("../models/articles");
-// var Comments = require("../models/comments");
+var Articles = require("../models/articles");
+var Comments = require("../models/comments");
 
 
 
